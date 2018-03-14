@@ -20,7 +20,7 @@ namespace TestConsole {
                 var requestBatteryStatusCheckResult = await lc.RequestBatteryStatusCheck();
 
                 Debug.WriteLine("Waiting for battery status check to finish...");
-                var wait = await lc.WaitForBatteryStatusCheckResult(requestBatteryStatusCheckResult.ResultKey, 5000);
+                var wait = await lc.WaitForBatteryStatusCheckResult(requestBatteryStatusCheckResult.ResultKey);
 
                 Debug.WriteLine("Getting battery status record...");
                 var getBatteryStatusRecordResult = await lc.GetBatteryStatusRecord();
