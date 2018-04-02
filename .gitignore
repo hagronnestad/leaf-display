@@ -217,3 +217,5 @@ FakesAssemblies/
 _Pvt_Extensions
 
 Azure Functions/LeafDisplay/LeafDisplay/Properties/launchSettings\.json
+
+Azure Functions/LeafDisplay/AzureFunctions/Properties/launchSettings\.json
