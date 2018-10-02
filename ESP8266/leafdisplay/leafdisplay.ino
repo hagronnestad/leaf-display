@@ -95,10 +95,10 @@ void updateDataFromApi() {
     http.begin(s.leafDataUrl);
     int httpCode = http.GET();
 
-    Serial.println("HTTP Code: " + String(httpCode));
+    //Serial.println("HTTP Code: " + String(httpCode));
 
     if (httpCode < 0) {
-        Serial.println("Feil: " + String(http.errorToString(httpCode).c_str()));
+        //Serial.println("Feil: " + String(http.errorToString(httpCode).c_str()));
         http.end();
         return;
     }
@@ -107,7 +107,7 @@ void updateDataFromApi() {
         StaticJsonBuffer<1024> jsonBuffer;
         JsonObject& root = jsonBuffer.parseObject(http.getString());
 
-        Serial.println(http.getString());
+        //Serial.println(http.getString());
 
         socPercent = root["SoC"].asString();
         socValue = root["SoC"];
@@ -146,7 +146,8 @@ void setup() {
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
 
-
+  // Send an empty command to Nextion to try and discard any data in the buffer, not sure if it works
+  sendToNextion("");
 
   //ticker.attach(5, ticker_updateDataFromApi);
 }
