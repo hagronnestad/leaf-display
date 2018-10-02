@@ -6,7 +6,7 @@ namespace LeafLib.Models {
     public class BatteryStatus {
 
         [JsonProperty("BatteryChargingStatus")]
-        public String BatteryChargingStatus { get; set; }
+        public String BatteryChargingStatus { get; set; } // NOT_CHARGING, NORMAL_CHARGING
 
         [JsonProperty("BatteryCapacity")]
         public String BatteryCapacity { get; set; }

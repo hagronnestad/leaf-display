@@ -12,7 +12,7 @@ namespace LeafLib.Models {
         public DateTime OperationDateAndTime { get; set; }
 
         [JsonProperty("PluginState")]
-        public string PluginState { get; set; }
+        public string PluginState { get; set; } //NOT_CONNECTED, CONNECTED
 
         [JsonProperty("CruisingRangeAcOn")]
         public string CruisingRangeAcOn { get; set; }

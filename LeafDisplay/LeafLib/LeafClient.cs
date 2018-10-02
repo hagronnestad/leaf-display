@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -23,8 +22,10 @@ namespace LeafLib {
         private string customSessionId;
         private string vin;
 
-        // Obtained from InitialApp.php, but seems to be static
         private readonly string initialAppStrings = "geORNtsZe5I4lRGjG9GZiA";
+
+        // Obtained from InitialApp.php, but seems to be static
+        private readonly string blowfishEcbKey = "uyI5Dj9g8VCOFDnBRUbr3g";
 
         public LeafClient(string email, string password, string regionCode = RegionConstants.Europe) {
             client.BaseAddress = new Uri(API_BASE_URI);
