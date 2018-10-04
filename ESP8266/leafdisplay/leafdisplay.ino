@@ -12,10 +12,22 @@ ESP8266WiFiMulti WiFiMulti;
 const uint8_t nextionCommandEnd[3] = {0xFF, 0xFF, 0xFF};
 
 String txtSoCId = "t0";
+String txtTimeStamp = "t1";
+String txtChargingStatus = "t4";
+String picChargingStatus = "p0";
+String txtRangeAc = "t3";
+String txtRange = "t2";
 String pbSoCId = "j0";
+
 
 String socPercent = "0";
 int socValue = 0;
+String chargingStatus = "";
+String pluginState = "";
+int range = 0;
+int rangeAc = 0;
+String chargeTime = "";
+String timeStamp = "";
 
 
 
@@ -111,6 +123,12 @@ void updateDataFromApi() {
 
         socPercent = root["SoC"].asString();
         socValue = root["SoC"];
+        chargingStatus = root["ChargingStatus"].asString();
+        pluginState = root["PluginState"].asString();
+        range = root["Range"];
+        rangeAc = root["RangeAc"];
+        chargeTime = root["ChargeTime"].asString();
+        timeStamp = root["TimeStamp"].asString();
     }
 
     http.end();
@@ -184,12 +202,38 @@ void setValue(String control, int val) {
     sendToNextion(control + ".val=" + String(val));
 }
 
+void setPicture(String control, int val) {
+    sendToNextion(control + ".pic=" + String(val));
+}
+
 void setBackColor(String control, String color) {
     sendToNextion(control + ".bco=" + color);
 }
 
 
 void updateScreen() {
-    setText(txtSoCId, socPercent);
+    setText(txtSoCId, socPercent + "%");
     setValue(pbSoCId, socValue);
+    setText(txtTimeStamp, timeStamp);
+    setText(txtRange, String(range / 1000) + "KM");
+    setText(txtRangeAc, String(rangeAc / 1000) + "KM");
+
+    if (chargingStatus == "NORMAL_CHARGING") {
+      setPicture(picChargingStatus, 1);
+      setText(txtChargingStatus, "CHARGING");
+      
+    } else if (chargingStatus == "NOT_CHARGING") {
+      setPicture(picChargingStatus, 2);
+      setText(txtChargingStatus, "NOT CHARGING");
+    }
 }
+
+
+
+
+
+
+
+
+
+
