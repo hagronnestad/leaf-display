@@ -11,7 +11,7 @@ namespace ConsoleTest2 {
 
         private static async Task Main(string[] args) {
 
-            //var r = await LoginAndGetSoCAsync(args);
+            //var r = await LoginAndGetSoCAsync(args[0], args[1]);
             var r = await LoginAndOutputToJson(args[0], args[1], args[2]);
         }
 
@@ -73,8 +73,8 @@ namespace ConsoleTest2 {
             return bsr;
         }
 
-        public static async Task<BatteryStatusRecordsRequestResult> LoginAndGetSoCAsync(string[] args) {
-            var lc = new LeafClient(args[0], args[1]);
+        public static async Task<BatteryStatusRecordsRequestResult> LoginAndGetSoCAsync(string email, string password) {
+            var lc = new LeafClient(email, password);
 
             BatteryStatusRecordsRequestResult bsr = null;
 
