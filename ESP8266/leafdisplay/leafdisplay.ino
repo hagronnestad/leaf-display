@@ -11,13 +11,13 @@ ESP8266WiFiMulti WiFiMulti;
 // NEXTION
 const uint8_t nextionCommandEnd[3] = {0xFF, 0xFF, 0xFF};
 
-String txtSoCId = "t0";
-String txtTimeStamp = "t1";
-String txtChargingStatus = "t4";
-String picChargingStatus = "p0";
-String txtRangeAc = "t3";
-String txtRange = "t2";
-String pbSoCId = "j0";
+String txtSoC = "txtSoC";
+String txtTimeStamp = "txtTimeStamp";
+String txtChargingStatus = "txtChargeText";
+//String picChargingStatus = "p0";
+//String txtRangeAc = "t3";
+String txtRange = "txtKm";
+String pbSoC = "pbSoC";
 
 
 String socPercent = "0";
@@ -25,7 +25,7 @@ int socValue = 0;
 String chargingStatus = "";
 String pluginState = "";
 int range = 0;
-int rangeAc = 0;
+//int rangeAc = 0;
 String chargeTime = "";
 String timeStamp = "";
 
@@ -51,38 +51,37 @@ Settings SettingsSetup() {
   Serial.println("\n\nType space to enter setup...");
   Serial.setTimeout(3000);
   
-  String nl = Serial.readStringUntil('\n');
+  String sm = Serial.readStringUntil('\n');
 
-  if (nl != " ") {
-    Serial.println("Skipping setup!");
-    Serial.setTimeout(1000);
-    return s;
-  }
-
-  Serial.setTimeout(60000);
-  Serial.println("Setup");
-  Serial.println("--------------");
+  if (sm == " ") {
+    Serial.setTimeout(60000);
+    Serial.println("Setup");
+    Serial.println("--------------");
+    
+    Serial.print("Enter new SSID [" + String(s.ssid) + "]: ");
+    String ssid = Serial.readStringUntil('\n');
+    if (ssid.length() > 0) ssid.toCharArray(s.ssid, sizeof(s.ssid));
+    Serial.println(String(s.ssid));
   
-  Serial.print("Enter new SSID [" + String(s.ssid) + "]: ");
-  String ssid = Serial.readStringUntil('\n');
-  if (ssid.length() > 0) ssid.toCharArray(s.ssid, sizeof(s.ssid));
-  Serial.println(String(s.ssid));
-
-  Serial.print("Enter new password [" + String(s.password) + "]: ");
-  String password = Serial.readStringUntil('\n');
-  if (password.length() > 0) password.toCharArray(s.password, sizeof(s.password));
-  Serial.println(s.password);
-
-  Serial.print("Enter new Leaf Data URL [" + String(s.leafDataUrl) + "]: ");
-  String leafDataUrl = Serial.readStringUntil('\n');
-  if (leafDataUrl.length() > 0) leafDataUrl.toCharArray(s.leafDataUrl, sizeof(s.leafDataUrl));
-  Serial.println(s.leafDataUrl);
-
-  EEPROM.put(0, s);
-  EEPROM.commit();
-  EEPROM.end();
-
-  Serial.println("\n\nSettings saved!\n");
+    Serial.print("Enter new password [" + String(s.password) + "]: ");
+    String password = Serial.readStringUntil('\n');
+    if (password.length() > 0) password.toCharArray(s.password, sizeof(s.password));
+    Serial.println(s.password);
+  
+    Serial.print("Enter new Leaf Data URL [" + String(s.leafDataUrl) + "]: ");
+    String leafDataUrl = Serial.readStringUntil('\n');
+    if (leafDataUrl.length() > 0) leafDataUrl.toCharArray(s.leafDataUrl, sizeof(s.leafDataUrl));
+    Serial.println(s.leafDataUrl);
+  
+    EEPROM.put(0, s);
+    EEPROM.commit();
+    EEPROM.end();
+  
+    Serial.println("\n\nSettings saved!\n");
+    
+  } else {
+    Serial.println("Skipping setup!");
+  }
 
   Serial.setTimeout(1000);
   return s;
@@ -119,14 +118,12 @@ void updateDataFromApi() {
         StaticJsonBuffer<1024> jsonBuffer;
         JsonObject& root = jsonBuffer.parseObject(http.getString());
 
-        //Serial.println(http.getString());
-
         socPercent = root["SoC"].asString();
         socValue = root["SoC"];
         chargingStatus = root["ChargingStatus"].asString();
         pluginState = root["PluginState"].asString();
         range = root["Range"];
-        rangeAc = root["RangeAc"];
+        //rangeAc = root["RangeAc"];
         chargeTime = root["ChargeTime"].asString();
         timeStamp = root["TimeStamp"].asString();
     }
@@ -138,7 +135,12 @@ void updateDataFromApi() {
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+
+  // Disable Nextion communication
+  //sendToNextion("code_c");
+  //sendToNextion("com_stop");
+  
   s = SettingsSetup();
 
   WiFi.disconnect(); // Clears last connected AP from flash
@@ -164,21 +166,23 @@ void setup() {
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
 
-  // Send an empty command to Nextion to try and discard any data in the buffer, not sure if it works
-  sendToNextion("");
+  // Enable Nextion communication
+  //sendToNextion("com_star");
+  //sendToNextion("bkcmd=0"); // No return values
 
   //ticker.attach(5, ticker_updateDataFromApi);
 }
 
 void loop() {
-      if((WiFiMulti.run() != WL_CONNECTED)) {
+    if((WiFiMulti.run() != WL_CONNECTED)) {
+        delay(1000);
         return;
     }
 
     updateDataFromApi();
     updateScreen();
 
-    delay(5000);
+    delay(60000);
 }
 
 
@@ -212,18 +216,21 @@ void setBackColor(String control, String color) {
 
 
 void updateScreen() {
-    setText(txtSoCId, socPercent + "%");
-    setValue(pbSoCId, socValue);
+    setText(txtSoC, socPercent);
+    setValue(pbSoC, socValue);
     setText(txtTimeStamp, timeStamp);
-    setText(txtRange, String(range / 1000) + "KM");
-    setText(txtRangeAc, String(rangeAc / 1000) + "KM");
+    setText(txtRange, String(range / 1000));
+    //setText(txtRangeAc, "AC " + String(rangeAc / 1000) + "KM");
+
+    float socDiv = 12.0f / 100.0f;
+    setPicture("page0", round(socValue * socDiv));
 
     if (chargingStatus == "NORMAL_CHARGING") {
-      setPicture(picChargingStatus, 1);
+      //setPicture(picChargingStatus, 1);
       setText(txtChargingStatus, "CHARGING");
       
     } else if (chargingStatus == "NOT_CHARGING") {
-      setPicture(picChargingStatus, 2);
+      //setPicture(picChargingStatus, 2);
       setText(txtChargingStatus, "NOT CHARGING");
     }
 }

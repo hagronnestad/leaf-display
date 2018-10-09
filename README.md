@@ -3,6 +3,9 @@
 ![](Images/case03-thumb.png "")
 ![](Images/case02-thumb.png "")
 ![](Images/case01-thumb.png "")
+![](Images/nextion02-thumb.png "")
+![](Images/nextion01-thumb.png "")
+
 
 ## C# `LeafClient` library and console application
 
