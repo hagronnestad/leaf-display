@@ -1,10 +1,10 @@
 # leaf-display
 
+![](Images/case04-thumb.png "")
+![](Images/case05-thumb.png "")
 ![](Images/case03-thumb.png "")
 ![](Images/case02-thumb.png "")
 ![](Images/case01-thumb.png "")
-![](Images/nextion02-thumb.png "")
-![](Images/nextion01-thumb.png "")
 
 
 ## C# `LeafClient` library and console application
@@ -32,6 +32,10 @@ The `ESP8266` folder contains an Arduino skecth to retrieve JSON data from a web
 
 ### Nextion display
 The `Nextion` folder contains the HMI project for the display that shows the data. The Nextion display I used is the `NX4832T035_011` which is the 3.5" version.
+
+![](Images/nextion02-thumb.png "")
+
+*This is the Nextion HMI design. I used the actual Nissan Leaf dashboard as inspiration.*
 
 ### Nextion 3D-printable case
 STL-files for the Nextion case can be found in the `Nextion Case` folder. The case is designed to be used with one of these [ESP programmers](https://www.ebay.com/itm/ESP-Series-Programmer-for-ESP8285-ESP8266-ESP32-ESP01-adapter-for-arduino/323127795519?hash=item4b3beadf3f:g:AdEAAOSwWmNaoWfZ), which makes it very easy to power and flash the ESP through micro USB. It also provides easy access to power and serial pins for the Nextion display.
