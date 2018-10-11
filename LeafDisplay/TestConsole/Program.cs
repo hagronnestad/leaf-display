@@ -3,6 +3,7 @@ using LeafLib.Models;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ConsoleTest2 {
@@ -11,11 +12,45 @@ namespace ConsoleTest2 {
 
         private static async Task Main(string[] args) {
 
-            //var r = await LoginAndGetSoCAsync(args[0], args[1]);
-            var r = await LoginAndOutputToJson(args[0], args[1], args[2]);
+            if (args.Length == 0 || args.Length < 2) {
+                PrintHelp();
+#if DEBUG
+                Console.ReadLine();
+#endif
+                return;
+            }
+
+            var userName = args[0];
+            var password = args[1];
+            var getLast = false;
+            var fileName = string.Empty;
+
+            args = args.Skip(2).ToArray();
+
+            for (int i = 0; i < args.Length; i++) {
+                switch (args[i].Trim().ToLower()) {
+
+                    case "-o":
+                        if (args.Length >= i + 1) {
+                            fileName = args[i + 1];
+                            i++;
+                        }
+                        break;
+
+                    case "-last":
+                        getLast = true;
+                        break;
+                }
+            }
+
+            await ExecuteCommand(userName, password, getLast, fileName);
+
+#if DEBUG
+            Console.ReadLine();
+#endif
         }
 
-        public static async Task<BatteryStatusRecordsRequestResult> LoginAndOutputToJson(string email, string password, string jsonPath) {
+        public static async Task ExecuteCommand(string email, string password, bool getLast = false, string fileName = null) {
             var lc = new LeafClient(email, password);
 
             BatteryStatusRecordsRequestResult bsr = null;
@@ -24,38 +59,41 @@ namespace ConsoleTest2 {
                 Console.WriteLine("Logging in...");
                 var loginResult = await lc.LogIn();
 
-                Console.WriteLine("Requesting battery status check...");
-                var requestBatteryStatusCheckResult = await lc.RequestBatteryStatusCheck();
+                if (!getLast) {
+                    Console.WriteLine("Requesting battery status check...");
+                    var requestBatteryStatusCheckResult = await lc.RequestBatteryStatusCheck();
 
-                Console.WriteLine("Waiting for battery status check to finish...");
-                var wait = await lc.WaitForBatteryStatusCheckResult(requestBatteryStatusCheckResult.ResultKey);
+                    Console.WriteLine("Waiting for battery status check to finish...");
+                    var wait = await lc.WaitForBatteryStatusCheckResult(requestBatteryStatusCheckResult.ResultKey);
 
-                Console.WriteLine("Getting battery status record...");
-                bsr = await lc.GetBatteryStatusRecord();
+                    Console.WriteLine("Getting battery status record...");
+                    bsr = await lc.GetBatteryStatusRecord();
+                }
 
             } catch (Exception e) {
-                Console.WriteLine($"Could not get data from NissanConnect!");
+                Console.WriteLine($"Could not get data from Nissan Connect!");
                 Console.WriteLine($"Error: {e.Message}");
             }
 
             if (bsr == null) {
-                Console.WriteLine($"Trying to get last battery status record as a fallback...");
-
                 try {
+                    Console.WriteLine("Getting battery status record...");
                     bsr = await lc.GetBatteryStatusRecord();
 
-                } catch (Exception f) {
-                    Console.WriteLine($"Error: {f.Message}");
+                } catch (Exception e) {
+                    Console.WriteLine($"Error: {e.Message}");
                 }
             }
 
             if (bsr == null) {
-                Console.WriteLine("Could not get GetBatteryStatusRecord!");
-                return null;
+                Console.WriteLine("Could not get the last battery status record.");
+                Console.WriteLine("Exiting...");
+                return;
             }
 
             var jsonData = new {
-                TimeStamp = bsr?.BatteryStatusRecord?.NotificationDateAndTime.ToString("dd\\/MM\\/yy HH\\:mm"),
+                TimeStampUtc = bsr?.BatteryStatusRecord?.NotificationDateAndTime.ToString("dd\\/MM\\/yy HH\\:mm"),
+                TimeStamp = bsr?.BatteryStatusRecord?.NotificationDateAndTimeAsLocal.ToString("dd\\/MM\\/yy HH\\:mm"),
                 BatteryCapacity = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryCapacity,
                 ChargingStatus = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryChargingStatus,
                 SoC = bsr?.BatteryStatusRecord?.BatteryStatus?.StateOfCharge?.Percent,
@@ -65,59 +103,33 @@ namespace ConsoleTest2 {
                 ChargeTime = $"{bsr?.BatteryStatusRecord?.TimeRequiredToFull200?.HourRequiredToFull}:{bsr?.BatteryStatusRecord?.TimeRequiredToFull200?.MinutesRequiredToFull}",
             };
 
-            var json = JsonConvert.SerializeObject(jsonData);
+            var json = JsonConvert.SerializeObject(jsonData, Formatting.Indented);
 
+            Console.WriteLine("\nRetrieved data:\n");
             Console.WriteLine(json);
-            File.WriteAllText(jsonPath, json);
 
-            return bsr;
-        }
-
-        public static async Task<BatteryStatusRecordsRequestResult> LoginAndGetSoCAsync(string email, string password) {
-            var lc = new LeafClient(email, password);
-
-            BatteryStatusRecordsRequestResult bsr = null;
-
-            try {
-                Console.WriteLine("Logging in...");
-                var loginResult = await lc.LogIn();
-
-                Console.WriteLine("Requesting battery status check...");
-                var requestBatteryStatusCheckResult = await lc.RequestBatteryStatusCheck();
-
-                Console.WriteLine("Waiting for battery status check to finish...");
-                var wait = await lc.WaitForBatteryStatusCheckResult(requestBatteryStatusCheckResult.ResultKey);
-
-                Console.WriteLine("Getting battery status record...");
-                bsr = await lc.GetBatteryStatusRecord();
-
-                Console.WriteLine($"SoC Record: {bsr?.BatteryStatusRecord?.BatteryStatus?.StateOfCharge?.Percent}%");
-                Console.WriteLine($"PluginState: {bsr?.BatteryStatusRecord?.PluginState}");
-                Console.WriteLine($"CruisingRangeAcOff: {bsr?.BatteryStatusRecord?.CruisingRangeAcOff}");
-                Console.WriteLine($"CruisingRangeAcOn: {bsr?.BatteryStatusRecord?.CruisingRangeAcOn}");
-                Console.WriteLine($"TimeRequiredToFull: {bsr?.BatteryStatusRecord?.TimeRequiredToFull?.HourRequiredToFull}:{bsr?.BatteryStatusRecord.TimeRequiredToFull?.MinutesRequiredToFull}");
-                Console.WriteLine($"TimeRequiredToFull200: {bsr?.BatteryStatusRecord?.TimeRequiredToFull200?.HourRequiredToFull}:{bsr?.BatteryStatusRecord.TimeRequiredToFull200?.MinutesRequiredToFull}");
-                Console.WriteLine($"Updated: {bsr?.BatteryStatusRecord?.NotificationDateAndTime}");
-
-            } catch (Exception e) {
-                Console.WriteLine($"Could not get data from NissanConnect!");
-                Console.WriteLine($"Error: {e.Message}");
-            }
-
-            if (bsr == null) {
-                Console.WriteLine($"Trying to get last battery status record as a fallback...");
-
+            if (!string.IsNullOrWhiteSpace(fileName)) {
                 try {
-                    bsr = await lc.GetBatteryStatusRecord();
-                    Console.WriteLine($"SoC Record: {bsr?.BatteryStatusRecord?.BatteryStatus?.StateOfCharge?.Percent}%");
-                    Console.WriteLine($"Updated: {bsr?.BatteryStatusRecord?.NotificationDateAndTime}");
+                    Console.WriteLine($"\nOutputting JSON data to '{fileName}'.");
+                    File.WriteAllText(fileName, json);
 
-                } catch (Exception f) {
-                    Console.WriteLine($"Error: {f.Message}");
+                } catch (Exception e) {
+                    Console.WriteLine($"Error: {e.Message}");
                 }
             }
+        }
 
-            return bsr;
+        public static void PrintHelp() {
+            Console.WriteLine("Usage: leafclient username password [-o {filename}] [-last]");
+            Console.WriteLine("");
+            Console.WriteLine("Options:");
+            Console.WriteLine("\tusername\tYour Nissan Connect username.");
+            Console.WriteLine("\tpassword\tYour blowfish encrypted password.");
+            Console.WriteLine("\t\t\tEncrypt your password at http://sladex.org/blowfish.js/.");
+            Console.WriteLine("\t\t\tKey: 'uyI5Dj9g8VCOFDnBRUbr3g'. Cipher mode: ECB. Output type: BASE64.");
+            Console.WriteLine("");
+            Console.WriteLine("\t-o\t\tOutputs the result as JSON to {filename}.");
+            Console.WriteLine("\t-last\t\tDon't query live data from car.");
         }
     }
 }
