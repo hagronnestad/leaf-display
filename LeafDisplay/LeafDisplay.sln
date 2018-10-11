@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27428.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeafLib", "LeafLib\LeafLib.csproj", "{2A238A5A-E69C-48A1-9EDC-830E9865555F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestConsole", "TestConsole\TestConsole.csproj", "{877C3D06-C377-42D3-9C51-06CD61408BDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LeafClient", "LeafClient\LeafClient.csproj", "{877C3D06-C377-42D3-9C51-06CD61408BDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

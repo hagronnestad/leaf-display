@@ -1,12 +1,11 @@
-﻿using LeafLib;
-using LeafLib.Models;
+﻿using LeafLib.Models;
 using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ConsoleTest2 {
+namespace LeafClient {
 
     internal class Program {
 
@@ -51,7 +50,7 @@ namespace ConsoleTest2 {
         }
 
         public static async Task ExecuteCommand(string email, string password, bool getLast = false, string fileName = null) {
-            var lc = new LeafClient(email, password);
+            var lc = new LeafLib.LeafClient(email, password);
 
             BatteryStatusRecordsRequestResult bsr = null;
 
