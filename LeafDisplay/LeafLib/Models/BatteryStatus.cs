@@ -1,24 +1,23 @@
 ﻿using Newtonsoft.Json;
-using System;
 
 namespace LeafLib.Models {
 
     public class BatteryStatus {
 
         [JsonProperty("BatteryChargingStatus")]
-        public String BatteryChargingStatus { get; set; } // NOT_CHARGING, NORMAL_CHARGING
+        public string BatteryChargingStatus { get; set; } // NOT_CHARGING, NORMAL_CHARGING
 
         [JsonProperty("BatteryCapacity")]
-        public String BatteryCapacity { get; set; }
+        public string BatteryCapacity { get; set; }
 
         [JsonProperty("BatteryRemainingAmount")]
-        public String BatteryRemainingAmount { get; set; }
+        public string BatteryRemainingAmount { get; set; }
 
         [JsonProperty("BatteryRemainingAmountWH")]
-        public String BatteryRemainingAmountWH { get; set; }
+        public string BatteryRemainingAmountWH { get; set; }
 
         [JsonProperty("BatteryRemainingAmountkWH")]
-        public String BatteryRemainingAmountkWH { get; set; }
+        public string BatteryRemainingAmountkWH { get; set; }
 
         [JsonProperty("SOC")]
         public StateOfCharge StateOfCharge { get; set; }
