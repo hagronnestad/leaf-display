@@ -1,4 +1,4 @@
-# leaf-display
+# Nissan Leaf 2017 Dashboard
 
 ![](Images/case04-thumb.png "")
 ![](Images/case05-thumb.png "")
@@ -6,24 +6,49 @@
 ![](Images/case02-thumb.png "")
 ![](Images/case01-thumb.png "")
 
+---
 
-## C# `LeafClient` library and console application
+## LeafClient
+The LeafClient is a cross platform console application which can authenticate with and query data from Nissan Connect EV.
 
-This repository contains a C# `LeafClient` class which can authenticate with and query data from Nissan Connect EV. There is also a cross platform console application that uses the `LeafClient` class to query data and optionally output the results as JSON to a file.
+#### Usage
+```
+Usage: leafclient username password [-o {filename}] [-last]
 
-**Example data:**
+Options:
+        username        Your Nissan Connect username.
+        password        Your blowfish encrypted password.
+                        Encrypt your password at http://sladex.org/blowfish.js/.
+                        Key: 'uyI5Dj9g8VCOFDnBRUbr3g'. Cipher mode: ECB. Output type: BASE64.
+
+        -o              Outputs the result as JSON to {filename}.
+        -last           Don't query live data from car.
+```
+
+\* *I intentionally did not add Blowfish encryption to the application because .NET does not have Blowfish encryption integrated in the framework and I did not want to add a dependency. The password needs to be supplied pre encrypted.*
+
+#### Example
+`dotnet LeafClient.dll username password -o data.json`
+
+#### Example output file
 ```json
 {
-    "TimeStamp": "08/10/18 19:30",
-    "BatteryCapacity": "240",
-    "ChargingStatus": "NOT_CHARGING",
-    "SoC": "48",
-    "PluginState": "NOT_CONNECTED",
-    "Range": "104000",
-    "RangeAc": "103000",
-    "ChargeTime": "10:30"
+  "TimeStampUtc": "11/10/18 20:35",
+  "TimeStamp": "11/10/18 22:35",
+  "BatteryCapacity": "240",
+  "ChargingStatus": "NOT_CHARGING",
+  "SoC": "61",
+  "PluginState": "NOT_CONNECTED",
+  "Range": "133000",
+  "RangeAc": "132000",
+  "ChargeTime": "8:30"
 }
 ```
+
+#### Setup/configuration
+I use a cron job on a Linux server to periodically run the `LeafClient` console application. I use the `-o` flag which writes the JSON data to a file. This file is served by my web server and consumed by the ESP8266.
+
+---
 
 ## IoT parts
 
