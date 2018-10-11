@@ -32,6 +32,8 @@ namespace LeafLib.Models {
         [JsonProperty("NotificationDateAndTime")]
         public DateTime NotificationDateAndTime { get; set; }
 
+        public DateTime NotificationDateAndTimeAsLocal => TimeZone.CurrentTimeZone.ToLocalTime(NotificationDateAndTime);
+
         [JsonProperty("TargetDate")]
         public DateTime TargetDate { get; set; }
 
