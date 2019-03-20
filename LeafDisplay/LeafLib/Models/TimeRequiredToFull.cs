@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using LeafLib.Extensions;
+using Newtonsoft.Json;
 
 namespace LeafLib.Models {
 
@@ -9,5 +10,17 @@ namespace LeafLib.Models {
 
         [JsonProperty("MinutesRequiredToFull")]
         public string MinutesRequiredToFull { get; set; }
+
+        [JsonIgnore]
+        public long TotalMinutesToFull
+        {
+            get
+            {
+                var h = HourRequiredToFull.StringToInt();
+                var m = MinutesRequiredToFull.StringToInt();
+
+                return (h * 60) + m;
+            }
+        }
     }
 }

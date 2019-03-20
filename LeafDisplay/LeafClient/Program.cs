@@ -3,7 +3,10 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using LeafLib.Extensions;
 
 namespace LeafClient {
 
@@ -23,6 +26,7 @@ namespace LeafClient {
             var password = args[1];
             var getLast = false;
             var fileName = string.Empty;
+            var url = string.Empty;
 
             args = args.Skip(2).ToArray();
 
@@ -36,27 +40,35 @@ namespace LeafClient {
                         }
                         break;
 
+                    case "-p":
+                        if (args.Length >= i + 1) {
+                            url = args[i + 1];
+                            i++;
+                        }
+                        break;
+
                     case "-last":
                         getLast = true;
                         break;
                 }
             }
 
-            await ExecuteCommand(userName, password, getLast, fileName);
+            await ExecuteCommand(userName, password, getLast, fileName, url);
 
 #if DEBUG
             Console.ReadLine();
 #endif
         }
 
-        public static async Task ExecuteCommand(string email, string password, bool getLast = false, string fileName = null) {
+        public static async Task ExecuteCommand(string email, string password, bool getLast = false, string fileName = null, string url = null) {
             var lc = new LeafLib.LeafClient(email, password);
 
             BatteryStatusRecordsRequestResult bsr = null;
+            UserLoginRequestResult loginResult = null;
 
             try {
                 Console.WriteLine("Logging in...");
-                var loginResult = await lc.LogIn();
+                loginResult = await lc.LogIn();
 
                 if (!getLast) {
                     Console.WriteLine("Requesting battery status check...");
@@ -90,19 +102,24 @@ namespace LeafClient {
                 return;
             }
 
-            var jsonData = new {
-                TimeStampUtc = bsr?.BatteryStatusRecord?.NotificationDateAndTime.ToString("dd\\/MM\\/yy HH\\:mm"),
-                TimeStamp = bsr?.BatteryStatusRecord?.NotificationDateAndTimeAsLocal.ToString("dd\\/MM\\/yy HH\\:mm"),
-                BatteryCapacity = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryCapacity,
-                ChargingStatus = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryChargingStatus,
-                SoC = bsr?.BatteryStatusRecord?.BatteryStatus?.StateOfCharge?.Percent,
-                PluginState = bsr?.BatteryStatusRecord?.PluginState,
-                Range = bsr?.BatteryStatusRecord?.CruisingRangeAcOff,
-                RangeAc = bsr?.BatteryStatusRecord?.CruisingRangeAcOn,
-                ChargeTime = $"{bsr?.BatteryStatusRecord?.TimeRequiredToFull200?.HourRequiredToFull}:{bsr?.BatteryStatusRecord?.TimeRequiredToFull200?.MinutesRequiredToFull}",
-            };
+            var json = JsonConvert.SerializeObject(new NissanLeafStatusDto {
 
-            var json = JsonConvert.SerializeObject(jsonData, Formatting.Indented);
+                BatteryCapacity = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryCapacity?.StringToInt() ?? 0,
+                BatteryRemainingAmount = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryRemainingAmount.StringToInt() ?? 0,
+                BatteryRemainingAmountkWH = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryRemainingAmountkWH.StringToInt() ?? 0,
+                BatteryRemainingAmountWH = bsr?.BatteryStatusRecord?.BatteryStatus?.BatteryRemainingAmountWH.StringToInt() ?? 0,
+                CruisingRangeAcOff = bsr?.BatteryStatusRecord?.CruisingRangeAcOff.StringToInt() ?? 0,
+                CruisingRangeAcOn = bsr?.BatteryStatusRecord?.CruisingRangeAcOn.StringToInt() ?? 0,
+                MinutesToFull = bsr?.BatteryStatusRecord?.TimeRequiredToFull?.TotalMinutesToFull ?? 0,
+                MinutesToFull200 = bsr?.BatteryStatusRecord?.TimeRequiredToFull200?.TotalMinutesToFull ?? 0,
+                MinutesToFull200_6kW = bsr?.BatteryStatusRecord?.TimeRequiredToFull200_6kW?.TotalMinutesToFull ?? 0,
+                NickName = loginResult?.VehicleInfoList.VehicleInfoWithCustomSessionId.FirstOrDefault().NickName,
+                Vin = loginResult?.VehicleInfoList.VehicleInfoWithCustomSessionId.FirstOrDefault().Vin,
+                PluginState = bsr?.BatteryStatusRecord?.PluginState,
+                StateOfCharge = bsr?.BatteryStatusRecord?.BatteryStatus?.StateOfCharge?.Percent?.StringToInt() ?? 0,
+                Timestamp = bsr?.BatteryStatusRecord?.NotificationDateAndTime ?? DateTime.MinValue
+
+            }, Formatting.Indented);
 
             Console.WriteLine("\nRetrieved data:\n");
             Console.WriteLine(json);
@@ -116,10 +133,23 @@ namespace LeafClient {
                     Console.WriteLine($"Error: {e.Message}");
                 }
             }
+
+            if (!string.IsNullOrWhiteSpace(url)) {
+                try {
+                    Console.WriteLine($"\nPosting JSON data to '{url}'.");
+
+                    var client = new HttpClient();
+
+                    var result = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+
+                } catch (Exception e) {
+                    Console.WriteLine($"Error: {e.Message}");
+                }
+            }
         }
 
         public static void PrintHelp() {
-            Console.WriteLine("Usage: leafclient username password [-o {filename}] [-last]");
+            Console.WriteLine("Usage: leafclient username password [-o {filename}] [-p {url}] [-last]");
             Console.WriteLine("");
             Console.WriteLine("Options:");
             Console.WriteLine("\tusername\tYour Nissan Connect username.");
@@ -128,6 +158,7 @@ namespace LeafClient {
             Console.WriteLine("\t\t\tKey: 'uyI5Dj9g8VCOFDnBRUbr3g'. Cipher mode: ECB. Output type: BASE64.");
             Console.WriteLine("");
             Console.WriteLine("\t-o\t\tOutputs the result as JSON to {filename}.");
+            Console.WriteLine("\t-p\t\tPosts the result as JSON to {url}.");
             Console.WriteLine("\t-last\t\tDon't query live data from car.");
         }
     }
