@@ -13,7 +13,7 @@ The LeafClient is a cross platform console application which can authenticate wi
 
 #### Usage
 ```
-Usage: leafclient username password [-o {filename}] [-last]
+Usage: leafclient username password [-o {filename}] [-p {url}] [-last]
 
 Options:
         username        Your Nissan Connect username.
@@ -22,6 +22,7 @@ Options:
                         Key: 'uyI5Dj9g8VCOFDnBRUbr3g'. Cipher mode: ECB. Output type: BASE64.
 
         -o              Outputs the result as JSON to {filename}.
+        -p              Posts the result as JSON to {url}.
         -last           Don't query live data from car.
 ```
 
@@ -33,15 +34,20 @@ Options:
 #### Example output file
 ```json
 {
-  "TimeStampUtc": "11/10/18 20:35",
-  "TimeStamp": "11/10/18 22:35",
-  "BatteryCapacity": "240",
-  "ChargingStatus": "NOT_CHARGING",
-  "SoC": "61",
+  "Timestamp": "2019-03-20T22:00:00",
+  "NickName": "leaf1",
+  "Vin": "123456789",
   "PluginState": "NOT_CONNECTED",
-  "Range": "133000",
-  "RangeAc": "132000",
-  "ChargeTime": "8:30"
+  "CruisingRangeAcOn": 168000,
+  "CruisingRangeAcOff": 186000,
+  "MinutesToFull": 240,
+  "MinutesToFull200": 150,
+  "MinutesToFull200_6kW": 70,
+  "BatteryCapacity": 240,
+  "BatteryRemainingAmount": 240,
+  "BatteryRemainingAmountWH": 0,
+  "BatteryRemainingAmountkWH": 0,
+  "StateOfCharge": 92
 }
 ```
 
