@@ -20,12 +20,11 @@ String txtRange = "txtKm";
 String pbSoC = "pbSoC";
 
 
-String socPercent = "0";
 int socValue = 0;
 String chargingStatus = "";
 String pluginState = "";
 int range = 0;
-//int rangeAc = 0;
+int rangeAc = 0;
 String chargeTime = "";
 String timeStamp = "";
 
@@ -118,14 +117,13 @@ void updateDataFromApi() {
         StaticJsonBuffer<1024> jsonBuffer;
         JsonObject& root = jsonBuffer.parseObject(http.getString());
 
-        socPercent = root["SoC"].asString();
-        socValue = root["SoC"];
-        chargingStatus = root["ChargingStatus"].asString();
-        pluginState = root["PluginState"].asString();
-        range = root["Range"];
-        //rangeAc = root["RangeAc"];
-        chargeTime = root["ChargeTime"].asString();
-        timeStamp = root["TimeStamp"].asString();
+        socValue = root["stateOfCharge"];
+        chargingStatus = root["chargingStatus"].asString();
+        pluginState = root["pluginState"].asString();
+        range = root["cruisingRangeAcOff"];
+        rangeAc = root["cruisingRangeAcOn"];
+        chargeTime = "test";// root["ChargeTime"].asString();
+        timeStamp = root["timestamp"].asString();
     }
 
     http.end();
@@ -216,7 +214,7 @@ void setBackColor(String control, String color) {
 
 
 void updateScreen() {
-    setText(txtSoC, socPercent);
+    setText(txtSoC, String(socValue) + "%");
     setValue(pbSoC, socValue);
     setText(txtTimeStamp, timeStamp);
     setText(txtRange, String(range / 1000));
@@ -234,8 +232,6 @@ void updateScreen() {
       setText(txtChargingStatus, "NOT CHARGING");
     }
 }
-
-
 
 
 
