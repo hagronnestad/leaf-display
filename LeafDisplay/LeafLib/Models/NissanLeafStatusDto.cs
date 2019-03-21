@@ -10,6 +10,7 @@ namespace LeafLib.Models {
         public string Vin { get; set; }
 
         public string PluginState { get; set; }
+        public string ChargingStatus { get; set; }
 
         public int CruisingRangeAcOn { get; set; }
         public int CruisingRangeAcOff { get; set; }

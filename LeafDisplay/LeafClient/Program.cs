@@ -116,6 +116,7 @@ namespace LeafClient {
                 NickName = loginResult?.VehicleInfoList.VehicleInfoWithCustomSessionId.FirstOrDefault().NickName,
                 Vin = loginResult?.VehicleInfoList.VehicleInfoWithCustomSessionId.FirstOrDefault().Vin,
                 PluginState = bsr?.BatteryStatusRecord?.PluginState,
+                ChargingStatus = bsr.BatteryStatusRecord?.BatteryStatus?.BatteryChargingStatus,
                 StateOfCharge = bsr?.BatteryStatusRecord?.BatteryStatus?.StateOfCharge?.Percent?.StringToInt() ?? 0,
                 Timestamp = bsr?.BatteryStatusRecord?.NotificationDateAndTime ?? DateTime.MinValue
 
