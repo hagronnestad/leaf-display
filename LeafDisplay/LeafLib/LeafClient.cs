@@ -10,38 +10,56 @@ using System.Threading.Tasks;
 namespace LeafLib {
 
     public class LeafClient {
-        private const string API_BASE_URI = "https://gdcportalgw.its-mo.com/gworchest_160803EC/gdc/";
+        private const string API_BASE_URI = "https://gdcportalgw.its-mo.com/api_v190426_NE/gdc/";
         private const int API_TIME_OUT = 30000;
 
         private HttpClient client = new HttpClient();
 
         private readonly string _email;
-        private readonly string _pasencryptedPasswordsword;
+        private readonly string _encryptedPassword;
         private readonly string _regionCode;
 
         private string _customSessionId;
         private string _vin;
 
-        private readonly string initialAppStrings = "geORNtsZe5I4lRGjG9GZiA";
+        private readonly string initialAppStrings = "9s5rfKVuMrT03RtzajWNcA";
 
-        // Obtained from InitialApp.php, but seems to be static
-        private readonly string blowfishEcbKey = "uyI5Dj9g8VCOFDnBRUbr3g";
+        // Obtained from InitialApp_v2.php, might be static
+        public string basePrm_blowfishEcbKey = "88dSp7wWnV3bvv9Z88zEwg";
 
         public LeafClient(string email, string encryptedPassword, string regionCode = RegionConstants.Europe) {
             client.BaseAddress = new Uri(API_BASE_URI);
             client.Timeout = TimeSpan.FromMilliseconds(API_TIME_OUT);
 
             _email = email;
-            _pasencryptedPasswordsword = encryptedPassword;
+            _encryptedPassword = encryptedPassword;
             _regionCode = regionCode;
+        }
+
+        public async Task<InitialAppResult> InitialApp_v2() {
+            var data = new List<KeyValuePair<string, string>> {
+                new KeyValuePair<string, string>("initial_app_str", initialAppStrings),
+            };
+            var formContent = new FormUrlEncodedContent(data);
+            var response = await client.PostAsync("InitialApp_v2.php", formContent);
+
+            if (!response.IsSuccessStatusCode) {
+                throw new Exception($"Request to '{response.RequestMessage.RequestUri}' failed with status code '{response.StatusCode}'.");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<InitialAppResult>(json);
+            if (result == null || result.Status != 200) throw new Exception("Could not get InitialApp_v2 result.");
+
+            return result;
         }
 
         public async Task<UserLoginRequestResult> LogIn() {
             var data = new List<KeyValuePair<string, string>> {
                 new KeyValuePair<string, string>("UserId", _email),
-                new KeyValuePair<string, string>("initial_app_strings", initialAppStrings),
+                new KeyValuePair<string, string>("initial_app_str", initialAppStrings),
                 new KeyValuePair<string, string>("RegionCode", _regionCode),
-                new KeyValuePair<string, string>("Password", _pasencryptedPasswordsword),
+                new KeyValuePair<string, string>("Password", _encryptedPassword),
             };
             var formContent = new FormUrlEncodedContent(data);
             var response = await client.PostAsync("UserLoginRequest.php", formContent);

@@ -67,6 +67,14 @@ namespace LeafClient {
             UserLoginRequestResult loginResult = null;
 
             try {
+                Console.WriteLine("Getting InitialApp_v2 result...");
+                var iar = await lc.InitialApp_v2();
+                if (iar.BasePrm != lc.basePrm_blowfishEcbKey) {
+                    Console.WriteLine($"BasePrm from InitialApp_v2 has changed, which means the password hash has to be updated!");
+                    Console.ReadKey();
+                    return;
+                }
+
                 Console.WriteLine("Logging in...");
                 loginResult = await lc.LogIn();
 
