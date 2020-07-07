@@ -144,15 +144,23 @@ namespace LeafClient {
             }
 
             if (!string.IsNullOrWhiteSpace(url)) {
-                try {
-                    Console.WriteLine($"\nPosting JSON data to '{url}'.");
+                var urls = url.Split(',');
 
-                    var client = new HttpClient();
+                if (urls.Any()) {
 
-                    var result = await client.PostAsync(url, new StringContent(json, Encoding.UTF8, "application/json"));
+                    foreach (var u in urls) {
+                        try {
+                            Console.WriteLine($"\nPosting JSON data to '{u}'.");
 
-                } catch (Exception e) {
-                    Console.WriteLine($"Error: {e.Message}");
+                            var client = new HttpClient();
+
+                            var result = await client.PostAsync(u, new StringContent(json, Encoding.UTF8, "application/json"));
+
+                        } catch (Exception e) {
+                            Console.WriteLine($"Error: {e.Message}");
+                        }
+                    }
+
                 }
             }
         }
@@ -167,7 +175,7 @@ namespace LeafClient {
             Console.WriteLine("\t\t\tKey: 'uyI5Dj9g8VCOFDnBRUbr3g'. Cipher mode: ECB. Output type: BASE64.");
             Console.WriteLine("");
             Console.WriteLine("\t-o\t\tOutputs the result as JSON to {filename}.");
-            Console.WriteLine("\t-p\t\tPosts the result as JSON to {url}.");
+            Console.WriteLine("\t-p\t\tPosts the result as JSON to {url}. Use comma for multiple urls.");
             Console.WriteLine("\t-last\t\tDon't query live data from car.");
         }
     }
