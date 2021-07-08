@@ -1,5 +1,10 @@
 # Build
 
+## dotnet
+```
+dotnet publish -c Release
+```
+
 ## Docker
 
 ### Build Image
