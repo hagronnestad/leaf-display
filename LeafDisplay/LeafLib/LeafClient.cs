@@ -1,4 +1,4 @@
-﻿using LeafLib.Models;
+using LeafLib.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace LeafLib {
 
     public class LeafClient {
-        private const string API_BASE_URI = "https://gdcportalgw.its-mo.com/api_v190426_NE/gdc/";
+        private const string API_BASE_URI = "https://gdcportalgw.its-mo.com/api_v210707_NE/gdc/";
         private const int API_TIME_OUT = 30000;
 
         private HttpClient client = new HttpClient();
