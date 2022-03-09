@@ -2,15 +2,15 @@
 
 *Animated preview of dashboard at different states.*
 
-![](Images/preview_v2.gif "")
+![](Images/preview_v2.gif)
 
 *Images of the 3D-printed case and assembly.*
 
-![](Images/case04-thumb.png "")
-![](Images/case05-thumb.png "")
-![](Images/case03-thumb.png "")
-![](Images/case02-thumb.png "")
-![](Images/case01-thumb.png "")
+![](Images/case04-thumb.png)
+![](Images/case05-thumb.png)
+![](Images/case03-thumb.png)
+![](Images/case02-thumb.png)
+![](Images/case01-thumb.png)
 
 ---
 
@@ -70,7 +70,7 @@ The `ESP8266` folder contains an Arduino skecth to retrieve JSON data from a web
 ### Nextion display
 The `Nextion` folder contains the HMI project for the display that shows the data. The Nextion display I used is the `NX4832T035_011` which is the 3.5" version.
 
-![](Images/preview_v2.gif "")
+![](Images/preview_v2.gif)
 
 *This is the Nextion HMI design. I used the actual Nissan Leaf dashboard as inspiration.*
 
